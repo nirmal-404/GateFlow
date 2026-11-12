@@ -21,8 +21,8 @@ public class ApiService {
     private final OrganizationRepository organizationRepository;
 
     public ApiService(
-        ApiRepository apiRepository,
-        OrganizationRepository organizationRepository
+            ApiRepository apiRepository,
+            OrganizationRepository organizationRepository
     ) {
         this.apiRepository = apiRepository;
         this.organizationRepository = organizationRepository;
@@ -31,25 +31,25 @@ public class ApiService {
     public ApiResponse createApi(UUID organizationId, CreateApiRequest request) {
 
         var organization = organizationRepository.findById(organizationId)
-            .orElseThrow(() -> new OrganizationNotFoundException(
-                "Organization not found: " + organizationId
-            ));
+                .orElseThrow(() -> new OrganizationNotFoundException(
+                        "Organization not found: " + organizationId
+                ));
 
         if (apiRepository.existsByOrganizationIdAndSlug(
-            organizationId, request.slug()
+                organizationId, request.slug()
         )) {
             throw new ApiAlreadyExistsException(
-                "API slug already exists for this organization: " + request.slug()
+                    "API slug already exists for this organization: " + request.slug()
             );
         }
 
         Api api = new Api(
-            organization,
-            request.name(),
-            request.slug(),
-            request.description(),
-            request.baseUrl(),
-            request.version()
+                organization,
+                request.name(),
+                request.slug(),
+                request.description(),
+                request.baseUrl(),
+                request.version()
         );
 
         Api savedApi = apiRepository.save(api);
@@ -59,16 +59,16 @@ public class ApiService {
 
     private ApiResponse mapToResponse(Api api) {
         return new ApiResponse(
-            api.getId(),
-            api.getOrganization().getId(),
-            api.getName(),
-            api.getSlug(),
-            api.getDescription(),
-            api.getBaseUrl(),
-            api.getVersion(),
-            api.getStatus(),
-            api.getCreatedAt(),
-            api.getUpdatedAt()
+                api.getId(),
+                api.getOrganization().getId(),
+                api.getName(),
+                api.getSlug(),
+                api.getDescription(),
+                api.getBaseUrl(),
+                api.getVersion(),
+                api.getStatus(),
+                api.getCreatedAt(),
+                api.getUpdatedAt()
         );
     }
 }

@@ -13,5 +13,6 @@ public record OrganizationResponse(
         OrganizationStatus status,
         Instant createdAt,
         Instant updatedAt
-) {
+        ) {
+
 }

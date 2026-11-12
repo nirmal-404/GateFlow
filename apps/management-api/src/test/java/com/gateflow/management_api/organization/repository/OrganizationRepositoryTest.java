@@ -31,11 +31,11 @@ class OrganizationRepositoryTest {
         );
 
         // Act
-        Organization savedOrganization =
-                organizationRepository.save(organization);
+        Organization savedOrganization
+                = organizationRepository.save(organization);
 
-        var foundOrganization =
-                organizationRepository.findBySlug(slug);
+        var foundOrganization
+                = organizationRepository.findBySlug(slug);
 
         // Assert
         assertTrue(foundOrganization.isPresent());

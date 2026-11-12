@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleApiAlreadyExists(
-        ApiAlreadyExistsException exception
+            ApiAlreadyExistsException exception
     ) {
         ApiErrorResponse error = new ApiErrorResponse(
                 HttpStatus.CONFLICT.value(),

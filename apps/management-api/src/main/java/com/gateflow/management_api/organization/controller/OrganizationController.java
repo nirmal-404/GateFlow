@@ -31,8 +31,8 @@ public class OrganizationController {
     public ResponseEntity<OrganizationResponse> createOrganization(
             @Valid @RequestBody CreateOrganizationRequest request
     ) {
-        OrganizationResponse response =
-                organizationService.createOrganization(request);
+        OrganizationResponse response
+                = organizationService.createOrganization(request);
 
         URI location = URI.create(
                 "/api/v1/organizations/" + response.id()
@@ -47,8 +47,8 @@ public class OrganizationController {
     public ResponseEntity<OrganizationResponse> getOrganization(
             @PathVariable UUID id
     ) {
-        OrganizationResponse response =
-                organizationService.getOrganization(id);
+        OrganizationResponse response
+                = organizationService.getOrganization(id);
 
         return ResponseEntity.ok(response);
     }

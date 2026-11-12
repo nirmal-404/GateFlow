@@ -24,13 +24,13 @@ public class ApiController {
 
     @PostMapping
     public ResponseEntity<ApiResponse> createApi(
-        @PathVariable UUID organizationId,
-        @Valid @RequestBody CreateApiRequest request
+            @PathVariable UUID organizationId,
+            @Valid @RequestBody CreateApiRequest request
     ) {
         ApiResponse response = apiService.createApi(organizationId, request);
 
         URI location = URI.create(
-            "/api/v1/organizations/" + organizationId + "/apis/" + response.id()
+                "/api/v1/organizations/" + organizationId + "/apis/" + response.id()
         );
 
         return ResponseEntity.created(location).body(response);

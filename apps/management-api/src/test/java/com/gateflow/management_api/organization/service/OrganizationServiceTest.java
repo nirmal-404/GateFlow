@@ -50,8 +50,8 @@ class OrganizationServiceTest {
                 .thenReturn(savedOrganization);
 
         // Act
-        OrganizationResponse result =
-                organizationService.createOrganization(request);
+        OrganizationResponse result
+                = organizationService.createOrganization(request);
 
         // Assert
         assertEquals("acme", result.slug());

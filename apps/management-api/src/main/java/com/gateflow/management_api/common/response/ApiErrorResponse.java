@@ -7,5 +7,6 @@ public record ApiErrorResponse(
         String error,
         String message,
         Instant timestamp
-) {
+        ) {
+
 }

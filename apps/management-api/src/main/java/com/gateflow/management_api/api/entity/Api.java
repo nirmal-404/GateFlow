@@ -9,13 +9,13 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(
-    name = "apis",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uk_apis_organization_slug",
-            columnNames = {"organization_id", "slug"}
-        )
-    }
+        name = "apis",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_apis_organization_slug",
+                    columnNames = {"organization_id", "slug"}
+            )
+        }
 )
 public class Api {
 
@@ -57,12 +57,12 @@ public class Api {
     }
 
     public Api(
-        Organization organization,
-        String name,
-        String slug,
-        String description,
-        String baseUrl,
-        String version
+            Organization organization,
+            String name,
+            String slug,
+            String description,
+            String baseUrl,
+            String version
     ) {
         this.organization = organization;
         this.name = name;
@@ -84,14 +84,43 @@ public class Api {
         updatedAt = Instant.now();
     }
 
-    public UUID getId() { return id; }
-    public Organization getOrganization() { return organization; }
-    public String getName() { return name; }
-    public String getSlug() { return slug; }
-    public String getDescription() { return description; }
-    public String getBaseUrl() { return baseUrl; }
-    public String getVersion() { return version; }
-    public ApiStatus getStatus() { return status; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public ApiStatus getStatus() {
+        return status;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 }
