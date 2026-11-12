@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.gateflow.management_api.api.exception.ApiAlreadyExistsException;
 import com.gateflow.management_api.common.response.ApiErrorResponse;
 import com.gateflow.management_api.organization.exception.OrganizationAlreadyExistsException;
 import com.gateflow.management_api.organization.exception.OrganizationNotFoundException;
@@ -44,5 +45,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
+    }
+
+    @ExceptionHandler(ApiAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiAlreadyExists(
+        ApiAlreadyExistsException exception
+    ) {
+        ApiErrorResponse error = new ApiErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                exception.getMessage(),
+                Instant.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(error);
     }
 }
