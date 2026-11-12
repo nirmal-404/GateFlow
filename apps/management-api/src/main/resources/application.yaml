@@ -9,11 +9,11 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: true
 
   flyway:
     enabled: true
 
 server:
-  port: 8080
+  port: 8081
