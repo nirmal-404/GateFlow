@@ -25,3 +25,8 @@ gateflow:
       rate-limit-window-seconds: 60
       quota-limit: 50000
       quota-window: MONTHLY
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration: 900000
