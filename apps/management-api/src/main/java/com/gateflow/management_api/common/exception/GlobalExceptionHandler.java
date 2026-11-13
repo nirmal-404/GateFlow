@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.gateflow.management_api.api.exception.ApiAlreadyExistsException;
 import com.gateflow.management_api.api.exception.ApiNotFoundException;
+import com.gateflow.management_api.api_key.exception.ApiKeyAlreadyRevokedException;
+import com.gateflow.management_api.api_key.exception.ApiKeyNotFoundException;
 import com.gateflow.management_api.application.exception.ApplicationAlreadyExistsException;
 import com.gateflow.management_api.application.exception.ApplicationNotFoundException;
 import com.gateflow.management_api.common.response.ApiErrorResponse;
@@ -21,6 +23,20 @@ import com.gateflow.management_api.subscription.exception.SubscriptionNotFoundEx
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ApiKeyNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiKeyNotFound(
+            ApiKeyNotFoundException exception
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(ApiKeyAlreadyRevokedException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiKeyAlreadyRevoked(
+            ApiKeyAlreadyRevokedException exception
+    ) {
+        return buildError(HttpStatus.CONFLICT, exception.getMessage());
+    }
 
     @ExceptionHandler(OrganizationAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleOrganizationAlreadyExists(
