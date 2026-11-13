@@ -8,9 +8,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.gateflow.management_api.api.exception.ApiAlreadyExistsException;
+import com.gateflow.management_api.api.exception.ApiNotFoundException;
+import com.gateflow.management_api.application.exception.ApplicationNotFoundException;
 import com.gateflow.management_api.common.response.ApiErrorResponse;
 import com.gateflow.management_api.organization.exception.OrganizationAlreadyExistsException;
 import com.gateflow.management_api.organization.exception.OrganizationNotFoundException;
+import com.gateflow.management_api.subscription.exception.SubscriptionAlreadyExistsException;
+import com.gateflow.management_api.subscription.exception.SubscriptionNotAllowedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -19,47 +23,62 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleOrganizationAlreadyExists(
             OrganizationAlreadyExistsException exception
     ) {
-        ApiErrorResponse response = new ApiErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                exception.getMessage(),
-                Instant.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(response);
+        return buildError(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(OrganizationNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleOrganizationNotFound(
             OrganizationNotFoundException exception
     ) {
-        ApiErrorResponse response = new ApiErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                exception.getMessage(),
-                Instant.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(response);
+        return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(ApiAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleApiAlreadyExists(
             ApiAlreadyExistsException exception
     ) {
-        ApiErrorResponse error = new ApiErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                exception.getMessage(),
+        return buildError(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(ApiNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiNotFound(
+            ApiNotFoundException exception
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(ApplicationNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleApplicationNotFound(
+            ApplicationNotFoundException exception
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(SubscriptionAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleSubscriptionAlreadyExists(
+            SubscriptionAlreadyExistsException exception
+    ) {
+        return buildError(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(SubscriptionNotAllowedException.class)
+    public ResponseEntity<ApiErrorResponse> handleSubscriptionNotAllowed(
+            SubscriptionNotAllowedException exception
+    ) {
+        return buildError(HttpStatus.FORBIDDEN, exception.getMessage());
+    }
+
+    private ResponseEntity<ApiErrorResponse> buildError(
+            HttpStatus status,
+            String message
+    ) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                message,
                 Instant.now()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(error);
+        return ResponseEntity.status(status).body(response);
     }
 }
