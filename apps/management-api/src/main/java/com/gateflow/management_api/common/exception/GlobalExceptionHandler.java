@@ -11,6 +11,8 @@ import com.gateflow.management_api.api.exception.ApiAlreadyExistsException;
 import com.gateflow.management_api.api.exception.ApiNotFoundException;
 import com.gateflow.management_api.api_key.exception.ApiKeyAlreadyRevokedException;
 import com.gateflow.management_api.api_key.exception.ApiKeyNotFoundException;
+import com.gateflow.management_api.api_key_policy.exception.ApiKeyPolicyAlreadyExistsException;
+import com.gateflow.management_api.api_key_policy.exception.ApiKeyPolicyNotFoundException;
 import com.gateflow.management_api.application.exception.ApplicationAlreadyExistsException;
 import com.gateflow.management_api.application.exception.ApplicationNotFoundException;
 import com.gateflow.management_api.common.response.ApiErrorResponse;
@@ -55,6 +57,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleApiAlreadyExists(
             ApiAlreadyExistsException exception
+    ) {
+        return buildError(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(ApiKeyPolicyNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiKeyPolicyNotFound(
+            ApiKeyPolicyNotFoundException exception
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(ApiKeyPolicyAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleApiKeyPolicyAlreadyExists(
+            ApiKeyPolicyAlreadyExistsException exception
     ) {
         return buildError(HttpStatus.CONFLICT, exception.getMessage());
     }

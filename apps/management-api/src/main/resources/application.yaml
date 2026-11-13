@@ -17,3 +17,11 @@ spring:
 
 server:
   port: 8081
+
+gateflow:
+  policy:
+    defaults:
+      rate-limit: 100
+      rate-limit-window-seconds: 60
+      quota-limit: 50000
+      quota-window: MONTHLY

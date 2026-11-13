@@ -1,3 +1,4 @@
+
 package com.gateflow.management_api.api_key.service;
 
 import java.time.Instant;
@@ -15,6 +16,11 @@ import com.gateflow.management_api.api_key.entity.ApiKeyStatus;
 import com.gateflow.management_api.api_key.exception.ApiKeyAlreadyRevokedException;
 import com.gateflow.management_api.api_key.exception.ApiKeyNotFoundException;
 import com.gateflow.management_api.api_key.repository.ApiKeyRepository;
+import com.gateflow.management_api.api_key_policy.config.DefaultApiKeyPolicyProperties;
+import com.gateflow.management_api.api_key_policy.entity.ApiKeyPolicy;
+import com.gateflow.management_api.api_key_policy.entity.PolicySource;
+import com.gateflow.management_api.api_key_policy.entity.QuotaWindow;
+import com.gateflow.management_api.api_key_policy.repository.ApiKeyPolicyRepository;
 import com.gateflow.management_api.application.entity.Application;
 import com.gateflow.management_api.application.exception.ApplicationNotFoundException;
 import com.gateflow.management_api.application.repository.ApplicationRepository;
@@ -26,15 +32,21 @@ public class ApiKeyService {
     private final ApiKeyRepository apiKeyRepository;
     private final ApplicationRepository applicationRepository;
     private final ApiKeyGenerator apiKeyGenerator;
+    private final ApiKeyPolicyRepository apiKeyPolicyRepository;
+    private final DefaultApiKeyPolicyProperties defaultPolicyProperties;
 
     public ApiKeyService(
             ApiKeyRepository apiKeyRepository,
             ApplicationRepository applicationRepository,
-            ApiKeyGenerator apiKeyGenerator
+            ApiKeyGenerator apiKeyGenerator,
+            ApiKeyPolicyRepository apiKeyPolicyRepository,
+            DefaultApiKeyPolicyProperties defaultPolicyProperties
     ) {
         this.apiKeyRepository = apiKeyRepository;
         this.applicationRepository = applicationRepository;
         this.apiKeyGenerator = apiKeyGenerator;
+        this.apiKeyPolicyRepository = apiKeyPolicyRepository;
+        this.defaultPolicyProperties = defaultPolicyProperties;
     }
 
     public CreateApiKeyResponse createApiKey(
@@ -63,6 +75,17 @@ public class ApiKeyService {
         );
 
         ApiKey savedApiKey = apiKeyRepository.save(apiKey);
+
+        ApiKeyPolicy defaultPolicy = new ApiKeyPolicy(
+                savedApiKey,
+                defaultPolicyProperties.getRateLimit(),
+                defaultPolicyProperties.getRateLimitWindowSeconds(),
+                defaultPolicyProperties.getQuotaLimit(),
+                QuotaWindow.valueOf(defaultPolicyProperties.getQuotaWindow()),
+                PolicySource.DEFAULT
+        );
+
+        apiKeyPolicyRepository.save(defaultPolicy);
 
         return new CreateApiKeyResponse(
                 toResponse(savedApiKey),

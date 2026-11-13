@@ -1,0 +1,509 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GateFlow | Development Tracker</title>
+<style>
+:root {
+  --bg:#0b1120; --panel:#131d30; --panel2:#19263b;
+  --text:#e5edf8; --muted:#91a2b9; --accent:#60a5fa;
+  --green:#22c55e; --border:#293950;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,system-ui,-apple-system,sans-serif;
+  line-height:1.6;
+}
+.container{max-width:1050px;margin:auto;padding:35px 20px 70px}
+header{margin-bottom:30px}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:2px}
+h1{font-size:36px;margin:5px 0}
+h2{font-size:21px;margin:0}
+h3{font-size:17px;margin:0}
+p{color:var(--muted)}
+.stats{
+ display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:25px 0;
+}
+.stat,.phase,.milestone,.summary{
+ background:var(--panel);border:1px solid var(--border);
+ border-radius:12px;padding:19px;
+}
+.stat strong{font-size:27px;display:block}
+.stat span,.small{font-size:12px;color:var(--muted)}
+.progress{
+ height:9px;background:#27354a;border-radius:20px;
+ overflow:hidden;margin:12px 0;
+}
+.progress div{height:100%;width:0;background:var(--green);transition:width .2s}
+.phase{margin:30px 0}
+.phase-header{margin-bottom:18px}
+.phase-header p{margin:3px 0}
+.milestone{margin:13px 0;padding:17px}
+.milestone-top{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+}
+.tag{
+ font-size:11px;padding:4px 9px;border-radius:20px;
+ background:#26344b;color:var(--muted);white-space:nowrap;
+}
+.tag.complete{background:#123b2a;color:#86efac}
+.tag.next{background:#17385a;color:#93c5fd}
+.task-list{margin-top:15px;border-top:1px solid var(--border);padding-top:10px}
+label{
+ display:flex;align-items:flex-start;gap:11px;padding:7px 2px;
+ cursor:pointer;font-size:14px;color:#d2deed;
+}
+label:hover{color:white}
+input[type=checkbox]{
+ accent-color:var(--green);width:17px;height:17px;
+ flex-shrink:0;margin-top:3px;cursor:pointer;
+}
+input:checked+span{text-decoration:line-through;color:#71839b}
+.mini-progress{font-size:12px;color:var(--muted);margin-top:8px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+button{
+ border:1px solid var(--border);background:var(--panel2);
+ color:var(--text);padding:10px 16px;border-radius:8px;
+ cursor:pointer;font-weight:600;
+}
+button:hover{border-color:var(--accent)}
+.note{
+ border-left:3px solid var(--accent);padding:12px 16px;
+ background:var(--panel);border-radius:5px;margin:20px 0;
+ color:var(--muted);font-size:13px;
+}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
+@media(max-width:600px){
+ .stats{grid-template-columns:1fr}
+ h1{font-size:29px}
+ .container{padding:22px 13px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+ <div class="eyebrow">PERSONAL PROJECT ROADMAP</div>
+ <h1>GateFlow 🚀</h1>
+ <p>Complete Development Roadmap & Progress Tracker</p>
+ <div class="note">
+ Track every development task from the initial management APIs
+ to a fully deployed, portfolio-worthy API gateway.
+ Your checklist is automatically saved in this browser.
+ </div>
+</header>
+
+<section class="stats">
+ <div class="stat">
+  <strong id="overall">0%</strong>
+  <span>Overall completion</span>
+  <div class="progress"><div id="overallBar"></div></div>
+ </div>
+ <div class="stat">
+  <strong id="completed">0 / 0</strong>
+  <span>Tasks completed</span>
+ </div>
+ <div class="stat">
+  <strong id="milestones">0 / 15</strong>
+  <span>Milestones completed</span>
+ </div>
+</section>
+
+<div class="actions">
+ <button onclick="window.print()">Print / Save as PDF</button>
+ <button onclick="exportProgress()">Export progress</button>
+ <button onclick="resetProgress()">Reset checklist</button>
+</div>
+
+<div id="roadmap"></div>
+
+<div class="summary">
+ <h2>🏁 Final Goal</h2>
+ <p>
+ Build and deploy GateFlow as a complete API management platform
+ featuring a control plane, API gateway, authentication, distributed
+ rate limiting, quotas, usage metering, analytics and an admin dashboard.
+ </p>
+ <p>
+ <strong>Definition of done:</strong> All milestones implemented,
+ tested, documented and demonstrated through a working deployment.
+ </p>
+</div>
+
+<footer>
+ GateFlow Development Tracker · Keep building, one milestone at a time.
+</footer>
+</div>
+
+<script>
+const phases = [
+{
+ name:"Phase 1 — Control Plane",
+ description:"Administrator configuration and management APIs.",
+ milestones:[
+ {
+ id:"M1",name:"Organization Management API",
+ status:"Completed",
+ tasks:[
+ "Implement organization creation",
+ "Implement organization retrieval",
+ "Implement organization validation",
+ "Implement exception handling",
+ "Test organization management endpoints"
+ ]
+ },
+ {
+ id:"M2",name:"API Registration",
+ status:"Completed",
+ tasks:[
+ "Implement API registration",
+ "Register backend APIs under organizations",
+ "Implement API retrieval",
+ "Implement API validation",
+ "Test API registration and retrieval"
+ ]
+ },
+ {
+ id:"M3",name:"Application & Subscription Management",
+ status:"Implemented",
+ tasks:[
+ "Implement application management",
+ "Implement application creation and retrieval",
+ "Implement API subscriptions",
+ "Implement subscription management",
+ "Implement application suspension",
+ "Implement application reactivation",
+ "Implement subscription revocation",
+ "Implement subscription status handling",
+ "Complete manual testing of application endpoints",
+ "Complete manual testing of subscription endpoints"
+ ],
+ pending:[8,9]
+ },
+ {
+ id:"M4",name:"API Key Management",
+ status:"Next",
+ tasks:[
+ "Implement secure API key generation",
+ "Hash API keys using SHA-256",
+ "Store API key hashes in the database",
+ "Support multiple active keys per application",
+ "Implement API key listing",
+ "Implement API key revocation",
+ "Support optional key expiration",
+ "Test key generation, validation and revocation"
+ ]
+ },
+ {
+ id:"M5",name:"API Access Policies",
+ tasks:[
+ "Design API access policy entity and database schema",
+ "Configure rate limits",
+ "Configure request quotas",
+ "Associate policies with subscriptions",
+ "Implement policy updates",
+ "Define default policies",
+ "Add policy validation"
+ ]
+ },
+ {
+ id:"M6",name:"Management API Completion",
+ tasks:[
+ "Complete remaining management operations",
+ "Implement pagination",
+ "Implement filtering and sorting",
+ "Improve validation responses",
+ "Standardize error responses",
+ "Secure management endpoints",
+ "Complete management API testing"
+ ]
+ }
+ ]
+},
+{
+ name:"Phase 2 — Data Plane (API Gateway)",
+ description:"The core traffic-management capabilities of GateFlow.",
+ milestones:[
+ {
+ id:"M7",name:"Gateway Foundation",
+ tasks:[
+ "Create Spring Cloud Gateway application",
+ "Configure dynamic API routing",
+ "Receive incoming client requests",
+ "Forward requests to registered backend APIs",
+ "Configure route resolution from registered APIs",
+ "Handle backend connection failures",
+ "Test request forwarding"
+ ]
+ },
+ {
+ id:"M8",name:"API Key Authentication & Access Control",
+ tasks:[
+ "Extract API keys from incoming requests",
+ "Hash incoming API keys for lookup",
+ "Validate API keys against stored hashes",
+ "Identify the associated application",
+ "Check application status",
+ "Verify active API subscriptions",
+ "Reject unauthorized requests",
+ "Return appropriate HTTP error responses",
+ "Test authentication and authorization flows"
+ ]
+ },
+ {
+ id:"M9",name:"Distributed Rate Limiting & Quotas",
+ tasks:[
+ "Integrate Redis",
+ "Implement Redis-based rate limiting",
+ "Implement distributed request counters",
+ "Implement quota enforcement",
+ "Implement atomic counter operations",
+ "Return HTTP 429 when limits are exceeded",
+ "Handle Redis failures safely",
+ "Test concurrent requests and limits"
+ ]
+ },
+ {
+ id:"M10",name:"Usage Metering",
+ tasks:[
+ "Design usage event structure",
+ "Track incoming API requests",
+ "Record application and API usage",
+ "Track successful requests",
+ "Track rejected requests",
+ "Publish usage events asynchronously",
+ "Process usage events",
+ "Store usage records in PostgreSQL",
+ "Test usage tracking and event processing"
+ ]
+ }
+ ]
+},
+{
+ name:"Phase 3 — Product Experience",
+ description:"Build the Angular frontend and analytics experience.",
+ milestones:[
+ {
+ id:"M11",name:"Admin Dashboard",
+ tasks:[
+ "Set up Angular frontend",
+ "Implement login and authentication",
+ "Build organization management UI",
+ "Build API registration UI",
+ "Build application management UI",
+ "Build subscription management UI",
+ "Build API key management UI",
+ "Build rate-limit configuration UI",
+ "Integrate frontend with management APIs"
+ ]
+ },
+ {
+ id:"M12",name:"Usage Analytics Dashboard",
+ tasks:[
+ "Build API request statistics",
+ "Display application usage",
+ "Display API usage",
+ "Display rate-limit violations",
+ "Build usage trend visualizations",
+ "Display API performance metrics",
+ "Integrate analytics with backend usage data"
+ ]
+ }
+ ]
+},
+{
+ name:"Phase 4 — Engineering & Delivery",
+ description:"Testing, deployment, documentation and final showcase.",
+ milestones:[
+ {
+ id:"M13",name:"Testing & Reliability",
+ tasks:[
+ "Write unit tests using JUnit",
+ "Use Mockito for service-layer testing",
+ "Implement integration tests with Testcontainers",
+ "Test PostgreSQL integration",
+ "Test Redis integration",
+ "Write gateway integration tests",
+ "Test concurrent rate limiting",
+ "Test authentication and authorization",
+ "Test failure scenarios and reliability"
+ ]
+ },
+ {
+ id:"M14",name:"Containerization & Deployment",
+ tasks:[
+ "Dockerize management Spring Boot application",
+ "Dockerize gateway Spring Boot application",
+ "Dockerize Angular frontend",
+ "Complete Docker Compose configuration",
+ "Configure PostgreSQL and Redis containers",
+ "Set up GitHub Actions CI/CD",
+ "Prepare AWS deployment",
+ "Configure environment-specific secrets",
+ "Deploy GateFlow to AWS",
+ "Verify deployed application"
+ ]
+ },
+ {
+ id:"M15",name:"Documentation & Final Showcase",
+ tasks:[
+ "Create system architecture diagram",
+ "Create database ER diagram",
+ "Document management APIs",
+ "Document gateway request flow",
+ "Write deployment guide",
+ "Document Architecture Decision Records (ADRs)",
+ "Prepare end-to-end demonstration",
+ "Write portfolio-quality GitHub README",
+ "Add screenshots and demo information",
+ "Finalize project showcase"
+ ]
+ }
+ ]
+}
+];
+
+const STORAGE_KEY="gateflow-roadmap-v1";
+let saved={};
+try {
+ saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}");
+} catch(e){saved={};}
+
+function isChecked(id,i){
+ if(saved[id+"-"+i]!==undefined) return saved[id+"-"+i];
+ const milestone=phases.flatMap(p=>p.milestones).find(m=>m.id===id);
+ return ["M1","M2"].includes(id) ||
+   (id==="M3" && i<8);
+}
+
+function save(){
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(saved));
+ renderStats();
+}
+
+function toggle(id,i,checked){
+ saved[id+"-"+i]=checked;
+ save();
+ renderStats();
+ renderRoadmap();
+}
+
+function renderRoadmap(){
+ const root=document.getElementById("roadmap");
+ root.innerHTML="";
+
+ phases.forEach(phase=>{
+  const section=document.createElement("section");
+  section.className="phase";
+
+  const heading=document.createElement("div");
+  heading.className="phase-header";
+  heading.innerHTML="<h2>"+phase.name+"</h2><p>"+phase.description+"</p>";
+  section.appendChild(heading);
+
+  phase.milestones.forEach(m=>{
+   const card=document.createElement("div");
+   card.className="milestone";
+
+   const checked=m.tasks.filter((t,i)=>isChecked(m.id,i)).length;
+   const percent=Math.round(checked/m.tasks.length*100);
+   const complete=checked===m.tasks.length;
+
+   const top=document.createElement("div");
+   top.className="milestone-top";
+
+   const title=document.createElement("h3");
+   title.textContent=m.id+" — "+m.name;
+
+   const tag=document.createElement("span");
+   tag.className="tag "+(complete?"complete":m.status==="Next"?"next":"");
+   tag.textContent=complete?"Completed":checked>0?percent+"% complete":m.status||"Not started";
+
+   top.append(title,tag);
+   card.appendChild(top);
+
+   const progress=document.createElement("div");
+   progress.className="progress";
+   const fill=document.createElement("div");
+   fill.style.width=percent+"%";
+   progress.appendChild(fill);
+   card.appendChild(progress);
+
+   const mini=document.createElement("div");
+   mini.className="mini-progress";
+   mini.textContent=checked+" of "+m.tasks.length+" tasks completed";
+   card.appendChild(mini);
+
+   const list=document.createElement("div");
+   list.className="task-list";
+
+   m.tasks.forEach((task,i)=>{
+    const label=document.createElement("label");
+    const checkbox=document.createElement("input");
+    checkbox.type="checkbox";
+    checkbox.checked=isChecked(m.id,i);
+    checkbox.addEventListener("change",e=>{
+     toggle(m.id,i,e.target.checked);
+    });
+
+    const span=document.createElement("span");
+    span.textContent=task;
+    if(m.pending && m.pending.includes(i)){
+     span.textContent+=" (Pending)";
+    }
+    label.append(checkbox,span);
+    list.appendChild(label);
+   });
+
+   card.appendChild(list);
+   section.appendChild(card);
+  });
+
+  root.appendChild(section);
+ });
+}
+
+function renderStats(){
+ let total=0,done=0,milestoneDone=0;
+ phases.forEach(p=>p.milestones.forEach(m=>{
+  total+=m.tasks.length;
+  const count=m.tasks.filter((t,i)=>isChecked(m.id,i)).length;
+  done+=count;
+  if(count===m.tasks.length) milestoneDone++;
+ }));
+
+ const percent=Math.round(done/total*100);
+ document.getElementById("overall").textContent=percent+"%";
+ document.getElementById("overallBar").style.width=percent+"%";
+ document.getElementById("completed").textContent=done+" / "+total;
+ document.getElementById("milestones").textContent=milestoneDone+" / 15";
+}
+
+function resetProgress(){
+ if(!confirm("Reset ALL checklist progress, including completed milestones?"))return;
+ saved={};
+ localStorage.removeItem(STORAGE_KEY);
+ renderRoadmap();
+ renderStats();
+}
+
+function exportProgress(){
+ const data={project:"GateFlow",exportedAt:new Date().toISOString(),progress:saved};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download="gateflow-progress.json";
+ a.click();
+ URL.revokeObjectURL(url);
+}
+
+renderRoadmap();
+renderStats();
+</script>
+</body>
+</html>
