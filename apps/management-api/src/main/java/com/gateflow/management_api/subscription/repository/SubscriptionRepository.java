@@ -1,5 +1,6 @@
 package com.gateflow.management_api.subscription.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +14,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
             UUID applicationId,
             UUID apiId
     );
+
+    Optional<Subscription> findByIdAndApplicationId(
+            UUID subscriptionId,
+            UUID applicationId);
+
+    List<Subscription> findAllByApplicationId(UUID applicationId);
 }

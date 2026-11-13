@@ -1,5 +1,6 @@
 package com.gateflow.management_api.subscription.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,13 @@ public class SubscriptionController {
         this.subscriptionService = subscriptionService;
     }
 
+    @GetMapping
+    public List<SubscriptionResponse> getSubscriptionsByApplication(
+            @PathVariable UUID applicationId) {
+
+        return subscriptionService.getSubscriptionsByApplication(applicationId);
+    }
+
     @PostMapping("/{apiId}")
     @ResponseStatus(HttpStatus.CREATED)
     public SubscriptionResponse subscribe(
@@ -25,5 +33,32 @@ public class SubscriptionController {
             @PathVariable UUID apiId
     ) {
         return subscriptionService.subscribe(applicationId, apiId);
+    }
+
+    @PatchMapping("/{subscriptionId}/suspend")
+    public SubscriptionResponse suspendSubscription(
+            @PathVariable UUID applicationId,
+            @PathVariable UUID subscriptionId
+    ) {
+
+        return subscriptionService.suspendSubscription(applicationId, subscriptionId);
+    }
+
+    @PatchMapping("/{subscriptionId}/revoke")
+    public SubscriptionResponse revokeSubscription(
+            @PathVariable UUID applicationId,
+            @PathVariable UUID subscriptionId
+    ) {
+
+        return subscriptionService.revokeSubscription(applicationId, subscriptionId);
+    }
+
+    @PatchMapping("/{subscriptionId}/reactivate")
+    public SubscriptionResponse reactivateSubscription(
+            @PathVariable UUID applicationId,
+            @PathVariable UUID subscriptionId
+    ) {
+
+        return subscriptionService.reactivateSubscription(applicationId, subscriptionId);
     }
 }

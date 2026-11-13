@@ -14,8 +14,10 @@ import com.gateflow.management_api.application.exception.ApplicationNotFoundExce
 import com.gateflow.management_api.common.response.ApiErrorResponse;
 import com.gateflow.management_api.organization.exception.OrganizationAlreadyExistsException;
 import com.gateflow.management_api.organization.exception.OrganizationNotFoundException;
+import com.gateflow.management_api.subscription.exception.InvalidSubscriptionStateException;
 import com.gateflow.management_api.subscription.exception.SubscriptionAlreadyExistsException;
 import com.gateflow.management_api.subscription.exception.SubscriptionNotAllowedException;
+import com.gateflow.management_api.subscription.exception.SubscriptionNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -76,11 +78,25 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.CONFLICT, exception.getMessage());
     }
 
+    @ExceptionHandler(InvalidSubscriptionStateException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidSubscriptionState(
+            InvalidSubscriptionStateException exception) {
+
+        return buildError(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
     @ExceptionHandler(SubscriptionNotAllowedException.class)
     public ResponseEntity<ApiErrorResponse> handleSubscriptionNotAllowed(
             SubscriptionNotAllowedException exception
     ) {
         return buildError(HttpStatus.FORBIDDEN, exception.getMessage());
+    }
+
+    @ExceptionHandler(SubscriptionNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleSubscriptionNotFound(
+            SubscriptionNotFoundException exception) {
+
+        return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     private ResponseEntity<ApiErrorResponse> buildError(
