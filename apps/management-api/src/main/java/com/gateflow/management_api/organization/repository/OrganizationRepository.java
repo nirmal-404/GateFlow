@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.gateflow.management_api.organization.entity.Organization;
 
-public interface OrganizationRepository
-        extends JpaRepository<Organization, UUID> {
+public interface OrganizationRepository extends JpaRepository<Organization, UUID> {
 
     Optional<Organization> findBySlug(String slug);
 

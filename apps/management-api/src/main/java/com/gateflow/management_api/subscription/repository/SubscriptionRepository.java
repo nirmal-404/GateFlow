@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.gateflow.management_api.subscription.entity.Subscription;
 
-public interface SubscriptionRepository
-        extends JpaRepository<Subscription, UUID> {
+public interface SubscriptionRepository extends JpaRepository<Subscription, UUID> {
 
     Optional<Subscription> findByApplicationIdAndApiId(
             UUID applicationId,
