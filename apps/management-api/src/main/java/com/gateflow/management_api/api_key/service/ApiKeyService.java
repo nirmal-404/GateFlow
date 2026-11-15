@@ -24,6 +24,8 @@ import com.gateflow.management_api.api_key_policy.repository.ApiKeyPolicyReposit
 import com.gateflow.management_api.application.entity.Application;
 import com.gateflow.management_api.application.exception.ApplicationNotFoundException;
 import com.gateflow.management_api.application.repository.ApplicationRepository;
+import com.gateflow.management_api.security.authorization.OrganizationAuthorizationService;
+import com.gateflow.management_api.security.authorization.OrganizationPermission;
 
 @Service
 @Transactional
@@ -34,30 +36,37 @@ public class ApiKeyService {
     private final ApiKeyGenerator apiKeyGenerator;
     private final ApiKeyPolicyRepository apiKeyPolicyRepository;
     private final DefaultApiKeyPolicyProperties defaultPolicyProperties;
+    private final OrganizationAuthorizationService authorizationService;
 
     public ApiKeyService(
             ApiKeyRepository apiKeyRepository,
             ApplicationRepository applicationRepository,
             ApiKeyGenerator apiKeyGenerator,
             ApiKeyPolicyRepository apiKeyPolicyRepository,
-            DefaultApiKeyPolicyProperties defaultPolicyProperties
+            DefaultApiKeyPolicyProperties defaultPolicyProperties,
+            OrganizationAuthorizationService authorizationService
     ) {
         this.apiKeyRepository = apiKeyRepository;
         this.applicationRepository = applicationRepository;
         this.apiKeyGenerator = apiKeyGenerator;
         this.apiKeyPolicyRepository = apiKeyPolicyRepository;
         this.defaultPolicyProperties = defaultPolicyProperties;
+        this.authorizationService = authorizationService;
     }
 
     public CreateApiKeyResponse createApiKey(
             UUID applicationId,
             CreateApiKeyRequest request
     ) {
-
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ApplicationNotFoundException(
                         "Application not found: " + applicationId
                 ));
+
+        authorizationService.requirePermission(
+                application.getOrganization().getId(),
+                OrganizationPermission.CREATE_API_KEY
+        );
 
         ApiKeyGenerator.GeneratedApiKey generatedKey;
 
@@ -96,11 +105,15 @@ public class ApiKeyService {
     @Transactional(readOnly = true)
     public List<ApiKeyResponse> getApiKeysByApplication(UUID applicationId) {
 
-        if (!applicationRepository.existsById(applicationId)) {
-            throw new ApplicationNotFoundException(
-                    "Application not found: " + applicationId
-            );
-        }
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ApplicationNotFoundException(
+                        "Application not found: " + applicationId
+                ));
+
+        authorizationService.requirePermission(
+                application.getOrganization().getId(),
+                OrganizationPermission.VIEW_API_KEYS
+        );
 
         return apiKeyRepository.findAllByApplicationId(applicationId)
                 .stream()
@@ -112,12 +125,16 @@ public class ApiKeyService {
             UUID applicationId,
             UUID apiKeyId
     ) {
-
         ApiKey apiKey = apiKeyRepository
                 .findByIdAndApplicationId(apiKeyId, applicationId)
                 .orElseThrow(() -> new ApiKeyNotFoundException(
                         "API key not found: " + apiKeyId
                 ));
+
+        authorizationService.requirePermission(
+                apiKey.getApplication().getOrganization().getId(),
+                OrganizationPermission.REVOKE_API_KEY
+        );
 
         if (apiKey.getStatus() == ApiKeyStatus.REVOKED) {
             throw new ApiKeyAlreadyRevokedException(

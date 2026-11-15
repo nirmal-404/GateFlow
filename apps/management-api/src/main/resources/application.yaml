@@ -14,6 +14,9 @@ spring:
 
   flyway:
     enabled: true
+  
+  profiles:
+    active: local
 
 server:
   port: 8081

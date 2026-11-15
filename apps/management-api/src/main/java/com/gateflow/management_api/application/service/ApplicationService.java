@@ -15,6 +15,8 @@ import com.gateflow.management_api.application.repository.ApplicationRepository;
 import com.gateflow.management_api.organization.entity.Organization;
 import com.gateflow.management_api.organization.exception.OrganizationNotFoundException;
 import com.gateflow.management_api.organization.repository.OrganizationRepository;
+import com.gateflow.management_api.security.authorization.OrganizationAuthorizationService;
+import com.gateflow.management_api.security.authorization.OrganizationPermission;
 
 @Service
 @Transactional
@@ -22,19 +24,26 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final OrganizationRepository organizationRepository;
+    private final OrganizationAuthorizationService authorizationService;
 
     public ApplicationService(
             ApplicationRepository applicationRepository,
-            OrganizationRepository organizationRepository
+            OrganizationRepository organizationRepository,
+            OrganizationAuthorizationService authorizationService
     ) {
         this.applicationRepository = applicationRepository;
         this.organizationRepository = organizationRepository;
+        this.authorizationService = authorizationService;
     }
 
     public ApplicationResponse createApplication(
             UUID organizationId,
             CreateApplicationRequest request
     ) {
+        authorizationService.requirePermission(
+                organizationId,
+                OrganizationPermission.CREATE_APPLICATION
+        );
 
         Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException(
@@ -43,7 +52,6 @@ public class ApplicationService {
 
         if (applicationRepository.existsByOrganizationIdAndSlug(
                 organizationId, request.slug())) {
-
             throw new ApplicationAlreadyExistsException(
                     "Application slug already exists in this organization: "
                     + request.slug()
@@ -57,27 +65,40 @@ public class ApplicationService {
                 request.description()
         );
 
-        Application savedApplication = applicationRepository.save(application);
-
-        return new ApplicationResponse(
-                savedApplication.getId(),
-                savedApplication.getOrganization().getId(),
-                savedApplication.getName(),
-                savedApplication.getSlug(),
-                savedApplication.getDescription(),
-                savedApplication.getStatus(),
-                savedApplication.getCreatedAt(),
-                savedApplication.getUpdatedAt()
-        );
-
+        return mapToResponse(applicationRepository.save(application));
     }
 
+    @Transactional(readOnly = true)
     public ApplicationResponse getApplication(UUID applicationId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ApplicationNotFoundException(
                         "Application not found: " + applicationId
                 ));
 
+        authorizationService.requirePermission(
+                application.getOrganization().getId(),
+                OrganizationPermission.VIEW_APPLICATION
+        );
+
+        return mapToResponse(application);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ApplicationResponse> getApplicationsByOrganization(
+            UUID organizationId
+    ) {
+        authorizationService.requirePermission(
+                organizationId,
+                OrganizationPermission.VIEW_APPLICATION
+        );
+
+        return applicationRepository.findAllByOrganizationId(organizationId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    private ApplicationResponse mapToResponse(Application application) {
         return new ApplicationResponse(
                 application.getId(),
                 application.getOrganization().getId(),
@@ -88,28 +109,5 @@ public class ApplicationService {
                 application.getCreatedAt(),
                 application.getUpdatedAt()
         );
-    }
-
-    public List<ApplicationResponse> getApplicationsByOrganization(UUID organizationId) {
-
-        if (!organizationRepository.existsById(organizationId)) {
-            throw new OrganizationNotFoundException(
-                    "Organization not found: " + organizationId
-            );
-        }
-
-        return applicationRepository.findAllByOrganizationId(organizationId)
-                .stream()
-                .map(application -> new ApplicationResponse(
-                        application.getId(),
-                        application.getOrganization().getId(),
-                        application.getName(),
-                        application.getSlug(),
-                        application.getDescription(),
-                        application.getStatus(),
-                        application.getCreatedAt(),
-                        application.getUpdatedAt()
-                ))
-                .toList();
     }
 }

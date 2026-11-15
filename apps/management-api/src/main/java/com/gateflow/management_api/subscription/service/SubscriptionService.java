@@ -8,10 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gateflow.management_api.api.entity.Api;
 import com.gateflow.management_api.api.exception.ApiNotFoundException;
+import com.gateflow.management_api.api.repository.ApiRepository;
 import com.gateflow.management_api.application.entity.Application;
 import com.gateflow.management_api.application.exception.ApplicationNotFoundException;
-import com.gateflow.management_api.api.repository.ApiRepository;
 import com.gateflow.management_api.application.repository.ApplicationRepository;
+import com.gateflow.management_api.security.authorization.OrganizationAuthorizationService;
+import com.gateflow.management_api.security.authorization.OrganizationPermission;
 import com.gateflow.management_api.subscription.dto.SubscriptionResponse;
 import com.gateflow.management_api.subscription.entity.Subscription;
 import com.gateflow.management_api.subscription.entity.SubscriptionStatus;
@@ -28,15 +30,18 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final ApplicationRepository applicationRepository;
     private final ApiRepository apiRepository;
+    private final OrganizationAuthorizationService authorizationService;
 
     public SubscriptionService(
             SubscriptionRepository subscriptionRepository,
             ApplicationRepository applicationRepository,
-            ApiRepository apiRepository
+            ApiRepository apiRepository,
+            OrganizationAuthorizationService authorizationService
     ) {
         this.subscriptionRepository = subscriptionRepository;
         this.applicationRepository = applicationRepository;
         this.apiRepository = apiRepository;
+        this.authorizationService = authorizationService;
     }
 
     public SubscriptionResponse subscribe(UUID applicationId, UUID apiId) {
@@ -46,16 +51,18 @@ public class SubscriptionService {
                         "Application not found: " + applicationId
                 ));
 
+        authorizationService.requirePermission(
+                application.getOrganization().getId(),
+                OrganizationPermission.MANAGE_SUBSCRIPTIONS
+        );
+
         Api api = apiRepository.findById(apiId)
                 .orElseThrow(() -> new ApiNotFoundException(
                         "API not found: " + apiId
                 ));
 
-        UUID applicationOrganizationId
-                = application.getOrganization().getId();
-
-        UUID apiOrganizationId
-                = api.getOrganization().getId();
+        UUID applicationOrganizationId = application.getOrganization().getId();
+        UUID apiOrganizationId = api.getOrganization().getId();
 
         if (!applicationOrganizationId.equals(apiOrganizationId)) {
             throw new SubscriptionNotAllowedException(
@@ -81,7 +88,6 @@ public class SubscriptionService {
             }
 
         } else {
-
             subscription = new Subscription(
                     application.getOrganization(),
                     application,
@@ -89,18 +95,19 @@ public class SubscriptionService {
             );
         }
 
-        Subscription savedSubscription
-                = subscriptionRepository.save(subscription);
-
-        return toResponse(savedSubscription);
+        return toResponse(subscriptionRepository.save(subscription));
     }
 
-    public SubscriptionResponse suspendSubscription(UUID applicationId, UUID subscriptionId) {
+    public SubscriptionResponse suspendSubscription(
+            UUID applicationId,
+            UUID subscriptionId
+    ) {
+        Subscription subscription = findSubscription(applicationId, subscriptionId);
 
-        Subscription subscription = subscriptionRepository.findByIdAndApplicationId(subscriptionId, applicationId)
-                .orElseThrow(() -> new SubscriptionNotFoundException(
-                        "Subscription not found for this application"
-                ));
+        authorizationService.requirePermission(
+                subscription.getOrganization().getId(),
+                OrganizationPermission.MANAGE_SUBSCRIPTIONS
+        );
 
         if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
             throw new InvalidSubscriptionStateException(
@@ -110,17 +117,19 @@ public class SubscriptionService {
 
         subscription.setStatus(SubscriptionStatus.SUSPENDED);
 
-        Subscription savedSubscription = subscriptionRepository.save(subscription);
-
-        return toResponse(savedSubscription);
+        return toResponse(subscriptionRepository.save(subscription));
     }
 
-    public SubscriptionResponse revokeSubscription(UUID applicationId, UUID subscriptionId) {
+    public SubscriptionResponse revokeSubscription(
+            UUID applicationId,
+            UUID subscriptionId
+    ) {
+        Subscription subscription = findSubscription(applicationId, subscriptionId);
 
-        Subscription subscription = subscriptionRepository.findByIdAndApplicationId(subscriptionId, applicationId)
-                .orElseThrow(() -> new SubscriptionNotFoundException(
-                        "Subscription not found for this application"
-                ));
+        authorizationService.requirePermission(
+                subscription.getOrganization().getId(),
+                OrganizationPermission.MANAGE_SUBSCRIPTIONS
+        );
 
         if (subscription.getStatus() == SubscriptionStatus.REVOKED) {
             throw new InvalidSubscriptionStateException(
@@ -130,17 +139,19 @@ public class SubscriptionService {
 
         subscription.setStatus(SubscriptionStatus.REVOKED);
 
-        Subscription savedSubscription = subscriptionRepository.save(subscription);
-
-        return toResponse(savedSubscription);
+        return toResponse(subscriptionRepository.save(subscription));
     }
 
-    public SubscriptionResponse reactivateSubscription(UUID applicationId, UUID subscriptionId) {
+    public SubscriptionResponse reactivateSubscription(
+            UUID applicationId,
+            UUID subscriptionId
+    ) {
+        Subscription subscription = findSubscription(applicationId, subscriptionId);
 
-        Subscription subscription = subscriptionRepository.findByIdAndApplicationId(subscriptionId, applicationId)
-                .orElseThrow(() -> new SubscriptionNotFoundException(
-                        "Subscription not found for this application"
-                ));
+        authorizationService.requirePermission(
+                subscription.getOrganization().getId(),
+                OrganizationPermission.MANAGE_SUBSCRIPTIONS
+        );
 
         if (subscription.getStatus() != SubscriptionStatus.SUSPENDED) {
             throw new InvalidSubscriptionStateException(
@@ -150,23 +161,39 @@ public class SubscriptionService {
 
         subscription.setStatus(SubscriptionStatus.ACTIVE);
 
-        Subscription savedSubscription = subscriptionRepository.save(subscription);
-
-        return toResponse(savedSubscription);
+        return toResponse(subscriptionRepository.save(subscription));
     }
 
-    public List<SubscriptionResponse> getSubscriptionsByApplication(UUID applicationId) {
+    @Transactional(readOnly = true)
+    public List<SubscriptionResponse> getSubscriptionsByApplication(
+            UUID applicationId
+    ) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ApplicationNotFoundException(
+                        "Application not found: " + applicationId
+                ));
 
-        if (!applicationRepository.existsById(applicationId)) {
-            throw new ApplicationNotFoundException(
-                    "Application not found: " + applicationId
-            );
-        }
+        authorizationService.requirePermission(
+                application.getOrganization().getId(),
+                OrganizationPermission.VIEW_SUBSCRIPTIONS
+        );
 
         return subscriptionRepository.findAllByApplicationId(applicationId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    private Subscription findSubscription(
+            UUID applicationId,
+            UUID subscriptionId
+    ) {
+        return subscriptionRepository.findByIdAndApplicationId(
+                subscriptionId,
+                applicationId
+        ).orElseThrow(() -> new SubscriptionNotFoundException(
+                "Subscription not found for this application"
+        ));
     }
 
     private SubscriptionResponse toResponse(Subscription subscription) {

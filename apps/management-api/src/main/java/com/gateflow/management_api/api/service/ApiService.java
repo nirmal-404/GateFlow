@@ -10,8 +10,11 @@ import com.gateflow.management_api.api.dto.CreateApiRequest;
 import com.gateflow.management_api.api.entity.Api;
 import com.gateflow.management_api.api.exception.ApiAlreadyExistsException;
 import com.gateflow.management_api.api.repository.ApiRepository;
+import com.gateflow.management_api.organization.entity.Organization;
 import com.gateflow.management_api.organization.exception.OrganizationNotFoundException;
 import com.gateflow.management_api.organization.repository.OrganizationRepository;
+import com.gateflow.management_api.security.authorization.OrganizationAuthorizationService;
+import com.gateflow.management_api.security.authorization.OrganizationPermission;
 
 @Service
 @Transactional
@@ -19,18 +22,26 @@ public class ApiService {
 
     private final ApiRepository apiRepository;
     private final OrganizationRepository organizationRepository;
+    private final OrganizationAuthorizationService authorizationService;
 
     public ApiService(
             ApiRepository apiRepository,
-            OrganizationRepository organizationRepository
+            OrganizationRepository organizationRepository,
+            OrganizationAuthorizationService authorizationService
     ) {
         this.apiRepository = apiRepository;
         this.organizationRepository = organizationRepository;
+        this.authorizationService = authorizationService;
     }
 
     public ApiResponse createApi(UUID organizationId, CreateApiRequest request) {
 
-        var organization = organizationRepository.findById(organizationId)
+        authorizationService.requirePermission(
+                organizationId,
+                OrganizationPermission.CREATE_API
+        );
+
+        Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException(
                         "Organization not found: " + organizationId
                 ));
@@ -52,9 +63,7 @@ public class ApiService {
                 request.version()
         );
 
-        Api savedApi = apiRepository.save(api);
-
-        return mapToResponse(savedApi);
+        return mapToResponse(apiRepository.save(api));
     }
 
     private ApiResponse mapToResponse(Api api) {
