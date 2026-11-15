@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  flyway:
+    enabled: true
+
+security:
+  jwt:
+    secret: Z2F0ZWZsb3ctaW50ZWdyYXRpb24tdGVzdC1zZWNyZXQtMzJieXRlcyE=
+    access-token-expiration: 900000
