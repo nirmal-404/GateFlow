@@ -55,7 +55,7 @@ public class AuthController {
                 request.email(),
                 request.password()
         );
-
+        System.out.println(response);
         return ResponseEntity.ok(response);
     }
 }
