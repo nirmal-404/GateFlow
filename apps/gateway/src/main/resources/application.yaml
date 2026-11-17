@@ -6,6 +6,11 @@ spring:
       url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${POSTGRES_DB:gateflow}
       username: ${POSTGRES_USER:gateflow}
       password: ${POSTGRES_PASSWORD:gateflow_local_password}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
       
   cloud:
     gateway:
