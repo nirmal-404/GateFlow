@@ -52,11 +52,13 @@ public class RedisRateLimitService {
         )
                 .next()
                 .map(result -> {
-                    Number currentValue = (Number) result.get(0);
-                    Number ttlValue = (Number) result.get(1);
+                    long currentRequests = Long.parseLong(
+                            result.get(0).toString()
+                    );
 
-                    long currentRequests = currentValue.longValue();
-                    long ttlSeconds = ttlValue.longValue();
+                    long ttlSeconds = Long.parseLong(
+                            result.get(1).toString()
+                    );
 
                     boolean allowed = currentRequests <= rateLimit;
 
