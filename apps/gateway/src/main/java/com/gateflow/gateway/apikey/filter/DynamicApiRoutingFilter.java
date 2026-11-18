@@ -162,6 +162,11 @@ public class DynamicApiRoutingFilter implements GlobalFilter, Ordered {
                 targetUri
         );
 
+        mutatedExchange.getAttributes().put(
+                "gateflow.apiId",
+                apiRoute.apiId()
+        );
+
         return chain.filter(mutatedExchange);
     }
 
