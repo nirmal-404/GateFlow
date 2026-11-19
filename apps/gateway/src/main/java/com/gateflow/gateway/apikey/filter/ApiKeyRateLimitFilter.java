@@ -26,6 +26,7 @@ public class ApiKeyRateLimitFilter implements GlobalFilter, Ordered {
 
     private static final String MANAGEMENT_ROUTE_ID = "management-api";
     private static final String API_KEY_ATTRIBUTE = "gateflow.apiKey";
+    private static final String API_KEY_POLICY_ATTRIBUTE = "gateflow.apiKeyPolicy";
 
     private final ApiKeyPolicyService policyService;
     private final RedisRateLimitService rateLimitService;
@@ -47,14 +48,12 @@ public class ApiKeyRateLimitFilter implements GlobalFilter, Ordered {
                 ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR
         );
 
-        // Management API does not use API-key rate limiting.
         if (route == null || MANAGEMENT_ROUTE_ID.equals(route.getId())) {
             return chain.filter(exchange);
         }
 
         ApiKeyRecord apiKey = exchange.getAttribute(API_KEY_ATTRIBUTE);
 
-        // Authentication should have populated this attribute.
         if (apiKey == null) {
             return writeError(
                     exchange,
@@ -88,6 +87,11 @@ public class ApiKeyRateLimitFilter implements GlobalFilter, Ordered {
             ApiKeyRecord apiKey,
             ApiKeyPolicyRecord policy
     ) {
+        exchange.getAttributes().put(
+                API_KEY_POLICY_ATTRIBUTE,
+                policy
+        );
+
         return rateLimitService.checkRateLimit(
                 apiKey.id(),
                 policy.rateLimit(),
@@ -149,13 +153,9 @@ public class ApiKeyRateLimitFilter implements GlobalFilter, Ordered {
                 .getBytes(StandardCharsets.UTF_8);
 
         exchange.getResponse().setStatusCode(status);
+
         exchange.getResponse().getHeaders()
                 .setContentType(MediaType.APPLICATION_JSON);
-
-        if (status == HttpStatus.TOO_MANY_REQUESTS) {
-            exchange.getResponse().getHeaders()
-                    .set("Retry-After", "1");
-        }
 
         DataBuffer buffer = exchange.getResponse()
                 .bufferFactory()
