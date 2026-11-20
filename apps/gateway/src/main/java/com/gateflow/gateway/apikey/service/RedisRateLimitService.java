@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 
+import com.gateflow.gateway.apikey.exception.RedisRateLimitException;
 import com.gateflow.gateway.apikey.model.RateLimitResult;
 
 import reactor.core.publisher.Mono;
@@ -23,6 +24,11 @@ public class RedisRateLimitService {
             end
 
             local ttl = redis.call('TTL', KEYS[1])
+
+            if ttl < 0 then
+                redis.call('EXPIRE', KEYS[1], ARGV[1])
+                ttl = tonumber(ARGV[1])
+            end
 
             return {current, ttl}
             """;
@@ -77,6 +83,17 @@ public class RedisRateLimitService {
                             remainingRequests,
                             retryAfter
                     );
-                });
+                })
+                .switchIfEmpty(Mono.error(
+                        new IllegalStateException(
+                                "Redis returned an empty rate limit result"
+                        )
+                ))
+                .onErrorMap(error
+                        -> new RedisRateLimitException(
+                                "Unable to evaluate API rate limit",
+                                error
+                        )
+                );
     }
 }

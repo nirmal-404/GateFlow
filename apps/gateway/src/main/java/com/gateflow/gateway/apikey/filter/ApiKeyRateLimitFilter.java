@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.gateflow.gateway.apikey.exception.RedisRateLimitException;
 import com.gateflow.gateway.apikey.model.ApiKeyRecord;
 import com.gateflow.gateway.apikey.model.ApiKeyPolicyRecord;
 import com.gateflow.gateway.apikey.model.RateLimitResult;
@@ -96,27 +97,36 @@ public class ApiKeyRateLimitFilter implements GlobalFilter, Ordered {
                 apiKey.id(),
                 policy.rateLimit(),
                 policy.rateLimitWindowSeconds()
-        ).flatMap(result -> {
-            addRateLimitHeaders(exchange, result, policy);
+        )
+                .flatMap(result -> {
+                    addRateLimitHeaders(exchange, result, policy);
 
-            if (!result.allowed()) {
-                exchange.getResponse().getHeaders().set(
-                        "Retry-After",
-                        String.valueOf(Math.max(
-                                1,
-                                result.retryAfter().toSeconds()
-                        ))
+                    if (!result.allowed()) {
+                        exchange.getResponse().getHeaders().set(
+                                "Retry-After",
+                                String.valueOf(Math.max(
+                                        1,
+                                        result.retryAfter().toSeconds()
+                                ))
+                        );
+
+                        return writeError(
+                                exchange,
+                                HttpStatus.TOO_MANY_REQUESTS,
+                                "Rate limit exceeded"
+                        );
+                    }
+
+                    return chain.filter(exchange);
+                })
+                .onErrorResume(
+                        RedisRateLimitException.class,
+                        error -> writeError(
+                                exchange,
+                                HttpStatus.SERVICE_UNAVAILABLE,
+                                "Rate limiting service is temporarily unavailable"
+                        )
                 );
-
-                return writeError(
-                        exchange,
-                        HttpStatus.TOO_MANY_REQUESTS,
-                        "Rate limit exceeded"
-                );
-            }
-
-            return chain.filter(exchange);
-        });
     }
 
     private void addRateLimitHeaders(
