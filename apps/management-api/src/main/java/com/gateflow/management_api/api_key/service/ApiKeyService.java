@@ -1,4 +1,3 @@
-
 package com.gateflow.management_api.api_key.service;
 
 import java.time.Instant;
@@ -13,8 +12,10 @@ import com.gateflow.management_api.api_key.dto.CreateApiKeyRequest;
 import com.gateflow.management_api.api_key.dto.CreateApiKeyResponse;
 import com.gateflow.management_api.api_key.entity.ApiKey;
 import com.gateflow.management_api.api_key.entity.ApiKeyStatus;
+import com.gateflow.management_api.application.entity.ApplicationStatus;
 import com.gateflow.management_api.api_key.exception.ApiKeyAlreadyRevokedException;
 import com.gateflow.management_api.api_key.exception.ApiKeyNotFoundException;
+import com.gateflow.management_api.application.exception.ApplicationInactiveException;
 import com.gateflow.management_api.api_key.repository.ApiKeyRepository;
 import com.gateflow.management_api.api_key_policy.config.DefaultApiKeyPolicyProperties;
 import com.gateflow.management_api.api_key_policy.entity.ApiKeyPolicy;
@@ -62,6 +63,12 @@ public class ApiKeyService {
                 .orElseThrow(() -> new ApplicationNotFoundException(
                         "Application not found: " + applicationId
                 ));
+
+        if (application.getStatus() != ApplicationStatus.ACTIVE) {
+            throw new ApplicationInactiveException(
+                    "Cannot create API keys for an inactive application: " + applicationId
+            );
+        }
 
         authorizationService.requirePermission(
                 application.getOrganization().getId(),
