@@ -90,4 +90,8 @@ public class Organization {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
+
+    public void setStatus(OrganizationStatus status) {
+        this.status = status;
+    }
 }

@@ -37,6 +37,10 @@ public class OrganizationMembership {
     @Column(nullable = false, length = 20)
     private OrganizationRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MembershipStatus status = MembershipStatus.ACTIVE;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -61,6 +65,10 @@ public class OrganizationMembership {
         return role;
     }
 
+    public MembershipStatus getStatus() {
+        return status;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
@@ -75,5 +83,9 @@ public class OrganizationMembership {
 
     public void setRole(OrganizationRole role) {
         this.role = role;
+    }
+
+    public void setStatus(MembershipStatus status) {
+        this.status = status;
     }
 }
