@@ -2,6 +2,7 @@ package com.gateflow.management_api.security.service;
 
 import java.util.UUID;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -21,6 +22,21 @@ public class CurrentUserService {
             );
         }
 
-        return UUID.fromString(jwtAuth.getToken().getSubject());
+        String subject = jwtAuth.getToken().getSubject();
+
+        if (subject == null || subject.isBlank()) {
+            throw new BadCredentialsException(
+                    "JWT subject is missing"
+            );
+        }
+
+        try {
+            return UUID.fromString(subject);
+        } catch (IllegalArgumentException exception) {
+            throw new BadCredentialsException(
+                    "JWT subject is not a valid user ID",
+                    exception
+            );
+        }
     }
 }

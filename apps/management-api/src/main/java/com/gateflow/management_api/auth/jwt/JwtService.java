@@ -17,13 +17,16 @@ public class JwtService {
 
     private final JwtEncoder jwtEncoder;
     private final long accessTokenExpiration;
+    private final String jwtIssuer;
 
     public JwtService(
             JwtEncoder jwtEncoder,
-            @Value("${security.jwt.access-token-expiration}") long accessTokenExpiration
+            @Value("${security.jwt.access-token-expiration}") long accessTokenExpiration,
+            @Value("${security.jwt.issuer:https://gateflow.local}") String jwtIssuer
     ) {
         this.jwtEncoder = jwtEncoder;
         this.accessTokenExpiration = accessTokenExpiration;
+        this.jwtIssuer = jwtIssuer;
     }
 
     public String generateAccessToken(User user) {
@@ -32,7 +35,7 @@ public class JwtService {
         Instant expiresAt = issuedAt.plusMillis(accessTokenExpiration);
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("gateflow")
+                .issuer(jwtIssuer)
                 .subject(user.getId().toString())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
