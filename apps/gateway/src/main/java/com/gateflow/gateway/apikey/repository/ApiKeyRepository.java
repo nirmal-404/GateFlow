@@ -22,18 +22,24 @@ public class ApiKeyRepository {
     public Mono<ApiKeyRecord> findValidApiKey(String keyPrefix, String keyHash) {
         return databaseClient.sql("""
                 SELECT
-                    id,
-                    application_id,
-                    key_prefix,
-                    key_hash,
-                    environment,
-                    status,
-                    expires_at
-                FROM application_api_keys
-                WHERE key_prefix = :keyPrefix
-                  AND key_hash = :keyHash
-                  AND status = 'ACTIVE'
-                  AND (expires_at IS NULL OR expires_at > :now)
+                    api_key.id,
+                    api_key.application_id,
+                    api_key.key_prefix,
+                    api_key.key_hash,
+                    api_key.environment,
+                    api_key.status,
+                    api_key.expires_at
+                FROM application_api_keys api_key
+                INNER JOIN applications app
+                    ON app.id = api_key.application_id
+                INNER JOIN organizations org
+                    ON org.id = app.organization_id
+                WHERE api_key.key_prefix = :keyPrefix
+                  AND api_key.key_hash = :keyHash
+                  AND api_key.status = 'ACTIVE'
+                  AND (api_key.expires_at IS NULL OR api_key.expires_at > :now)
+                  AND app.status = 'ACTIVE'
+                  AND org.status = 'ACTIVE'
                 """)
                 .bind("keyPrefix", keyPrefix)
                 .bind("keyHash", keyHash)

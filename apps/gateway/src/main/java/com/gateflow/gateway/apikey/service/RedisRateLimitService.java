@@ -68,7 +68,7 @@ public class RedisRateLimitService {
                     );
 
                     Duration retryAfter = Duration.ofSeconds(
-                            Math.max(0, ttlSeconds)
+                            Math.max(1, ttlSeconds)
                     );
 
                     return new RateLimitResult(
