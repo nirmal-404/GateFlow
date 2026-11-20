@@ -1,14 +1,13 @@
 package com.gateflow.management_api.security;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -28,6 +27,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import com.gateflow.management_api.organization.entity.Organization;
 import com.gateflow.management_api.organization.repository.OrganizationRepository;
+import com.gateflow.management_api.organization.entity.OrganizationStatus;
+import com.gateflow.management_api.user.entity.MembershipStatus;
 import com.gateflow.management_api.user.entity.OrganizationMembership;
 import com.gateflow.management_api.user.entity.OrganizationRole;
 import com.gateflow.management_api.user.entity.User;
@@ -146,6 +147,30 @@ class OrganizationAuthorizationIntegrationTest {
         ).andExpect(status().isForbidden());
     }
 
+    @Test
+    void shouldRejectMemberWithSuspendedMembership() throws Exception {
+
+        User viewer = userRepository.findByEmailIgnoreCase("viewer@test.com")
+                .orElseThrow();
+
+        OrganizationMembership membership = membershipRepository
+                .findByUserIdAndOrganizationId(viewer.getId(), organizationId)
+                .orElseThrow();
+
+        membership.setStatus(MembershipStatus.SUSPENDED);
+        membershipRepository.saveAndFlush(membership);
+
+        try {
+            mockMvc.perform(
+                    get("/api/v1/organizations/{id}", organizationId)
+                            .header("Authorization", bearer(viewerToken))
+            ).andExpect(status().isForbidden());
+        } finally {
+            membership.setStatus(MembershipStatus.ACTIVE);
+            membershipRepository.saveAndFlush(membership);
+        }
+    }
+
     private String registerAndLogin(String email) throws Exception {
 
         mockMvc.perform(
@@ -174,6 +199,27 @@ class OrganizationAuthorizationIntegrationTest {
         return objectMapper.readTree(
                 loginResult.getResponse().getContentAsString()
         ).get("accessToken").asText();
+    }
+
+    @Test
+    void shouldRejectAccessWhenOrganizationIsSuspended() throws Exception {
+
+        Organization organization = organizationRepository
+                .findById(organizationId)
+                .orElseThrow();
+
+        organization.setStatus(OrganizationStatus.SUSPENDED);
+        organizationRepository.saveAndFlush(organization);
+
+        try {
+            mockMvc.perform(
+                    get("/api/v1/organizations/{id}", organizationId)
+                            .header("Authorization", bearer(ownerToken))
+            ).andExpect(status().isForbidden());
+        } finally {
+            organization.setStatus(OrganizationStatus.ACTIVE);
+            organizationRepository.saveAndFlush(organization);
+        }
     }
 
     private void addMembership(
