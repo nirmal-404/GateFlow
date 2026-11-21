@@ -40,3 +40,8 @@ management:
     web:
       exposure:
         include: health,info
+
+gateflow:
+  resilience:
+    circuit-breaker:
+      wait-duration: ${GATEFLOW_CIRCUIT_BREAKER_WAIT_DURATION:30s}
