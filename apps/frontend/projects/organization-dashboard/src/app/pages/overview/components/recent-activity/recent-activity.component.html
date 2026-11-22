@@ -1,0 +1,91 @@
+<!-- Recent Activity Feed (Linear/Stripe inspired) -->
+<div class="bg-white rounded-xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs flex flex-col justify-between">
+  <!-- Feed Header -->
+  <div class="pb-4 border-b border-slate-100 flex items-center justify-between">
+    <div>
+      <h2 class="text-base font-semibold text-slate-900 tracking-tight">Recent Activity</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Audit log of recent organization events.</p>
+    </div>
+    <span class="text-[11px] font-medium text-slate-400">Live feed</span>
+  </div>
+
+  <!-- Timeline List -->
+  <div class="mt-4 space-y-4">
+    @for (item of activities(); track item.id; let last = $last) {
+      <div class="relative flex items-start gap-3">
+        <!-- Vertical connector line -->
+        @if (!last) {
+          <span class="absolute left-4 top-8 bottom-0 w-px bg-slate-200" aria-hidden="true"></span>
+        }
+
+        <!-- Status Icon Avatar -->
+        <div
+          class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border z-10"
+          [class.bg-emerald-50]="item.badgeType === 'success'"
+          [class.border-emerald-200]="item.badgeType === 'success'"
+          [class.text-emerald-600]="item.badgeType === 'success'"
+          [class.bg-blue-50]="item.badgeType === 'info'"
+          [class.border-blue-200]="item.badgeType === 'info'"
+          [class.text-blue-600]="item.badgeType === 'info'"
+          [class.bg-amber-50]="item.badgeType === 'warning'"
+          [class.border-amber-200]="item.badgeType === 'warning'"
+          [class.text-amber-600]="item.badgeType === 'warning'"
+          [class.bg-rose-50]="item.badgeType === 'danger'"
+          [class.border-rose-200]="item.badgeType === 'danger'"
+          [class.text-rose-600]="item.badgeType === 'danger'"
+        >
+          @switch (item.type) {
+            @case ('key_created') {
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
+                <path d="m21 2-9.6 9.6" />
+                <circle cx="7.5" cy="15.5" r="5.5" />
+              </svg>
+            }
+            @case ('app_registered') {
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M3 9h18" />
+              </svg>
+            }
+            @case ('sub_activated') {
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            }
+            @case ('key_revoked') {
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            }
+            @case ('policy_updated') {
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            }
+          }
+        </div>
+
+        <!-- Event Details -->
+        <div class="min-w-0 flex-1 pt-0.5">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-semibold text-slate-900 truncate">
+              {{ item.title }}
+            </p>
+            <span class="text-[10px] text-slate-400 shrink-0">
+              {{ item.timestamp }}
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
+            {{ item.description }}
+          </p>
+          <div class="flex items-center gap-1.5 mt-1.5 text-[10px] text-slate-400">
+            <span>By {{ item.user }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

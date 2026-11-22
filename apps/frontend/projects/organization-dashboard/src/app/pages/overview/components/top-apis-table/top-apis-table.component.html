@@ -1,0 +1,84 @@
+<!-- Top APIs Table Card (Linear/Stripe inspired) -->
+<div class="bg-white rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between overflow-hidden">
+  <!-- Table Header -->
+  <div class="p-5 sm:p-6 pb-4 border-b border-slate-100 flex items-center justify-between">
+    <div>
+      <h2 class="text-base font-semibold text-slate-900 tracking-tight">Top APIs by Volume</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Most actively called endpoints in your organization.</p>
+    </div>
+    <a
+      routerLink="/apis"
+      class="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1"
+    >
+      View all APIs
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+      </svg>
+    </a>
+  </div>
+
+  <!-- Responsive Table -->
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
+      <thead>
+        <tr class="bg-slate-50/75 border-b border-slate-100 text-slate-500 font-medium">
+          <th scope="col" class="py-3 px-4 sm:px-6">API Name & Endpoint</th>
+          <th scope="col" class="py-3 px-4">Method</th>
+          <th scope="col" class="py-3 px-4 text-right">Requests</th>
+          <th scope="col" class="py-3 px-4 text-right">Success Rate</th>
+          <th scope="col" class="py-3 px-4 sm:pr-6 text-right">Avg Latency</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 text-slate-700">
+        @for (api of apis(); track api.id) {
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <!-- Name & Path -->
+            <td class="py-3.5 px-4 sm:px-6">
+              <div class="font-medium text-slate-900">{{ api.name }}</div>
+              <div class="font-mono text-[11px] text-slate-400 mt-0.5">{{ api.path }}</div>
+            </td>
+
+            <!-- Method Badge -->
+            <td class="py-3.5 px-4">
+              <span
+                class="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase border"
+                [class.bg-emerald-50]="api.method === 'GET'"
+                [class.text-emerald-700]="api.method === 'GET'"
+                [class.border-emerald-200/60]="api.method === 'GET'"
+                [class.bg-blue-50]="api.method === 'POST'"
+                [class.text-blue-700]="api.method === 'POST'"
+                [class.border-blue-200/60]="api.method === 'POST'"
+                [class.bg-amber-50]="api.method === 'PUT'"
+                [class.text-amber-700]="api.method === 'PUT'"
+                [class.border-amber-200/60]="api.method === 'PUT'"
+                [class.bg-rose-50]="api.method === 'DELETE'"
+                [class.text-rose-700]="api.method === 'DELETE'"
+                [class.border-rose-200/60]="api.method === 'DELETE'"
+              >
+                {{ api.method }}
+              </span>
+            </td>
+
+            <!-- Requests Count -->
+            <td class="py-3.5 px-4 text-right font-medium text-slate-900">
+              {{ api.requests }}
+            </td>
+
+            <!-- Success Rate -->
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full" [class.bg-emerald-500]="api.successRate >= 99.8" [class.bg-amber-500]="api.successRate < 99.8"></span>
+                <span class="font-medium text-slate-900">{{ api.successRate }}%</span>
+              </div>
+            </td>
+
+            <!-- Latency -->
+            <td class="py-3.5 px-4 sm:pr-6 text-right font-mono text-slate-600">
+              {{ api.avgLatencyMs }} ms
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

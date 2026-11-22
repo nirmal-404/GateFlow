@@ -1,0 +1,47 @@
+<!-- API Traffic Analytics Chart Container (Stripe/Linear inspired) -->
+<div class="bg-white rounded-xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs">
+  <!-- Chart Header: Title, Description & Summary Pills -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
+    <div>
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-semibold text-slate-900 tracking-tight">API Traffic Analytics</h2>
+        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/60">
+          Real-time
+        </span>
+      </div>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Requests distribution across all deployed gateways and endpoints.
+      </p>
+    </div>
+
+    <!-- Quick Summary Metrics -->
+    <div class="flex items-center gap-4 text-xs">
+      <div class="flex flex-col sm:items-end">
+        <span class="text-[11px] text-slate-400 font-medium">Period Volume</span>
+        <span class="text-sm font-semibold text-slate-900">{{ totalPeriodRequests() }}</span>
+      </div>
+      <div class="h-6 w-px bg-slate-200 hidden sm:block"></div>
+      <div class="flex flex-col sm:items-end">
+        <span class="text-[11px] text-slate-400 font-medium">Error Rate</span>
+        <span class="text-sm font-semibold text-emerald-600">{{ errorRate() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ApexChart Element -->
+  <div class="mt-4 -ml-2 -mr-2">
+    <apx-chart
+      [series]="chartSeries()"
+      [chart]="chartOptions()"
+      [xaxis]="xaxis()"
+      [yaxis]="yaxis"
+      [stroke]="stroke"
+      [tooltip]="tooltip"
+      [dataLabels]="dataLabels"
+      [legend]="legend"
+      [colors]="colors"
+      [grid]="grid"
+      [fill]="fill"
+    ></apx-chart>
+  </div>
+</div>
