@@ -139,6 +139,20 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(org.springframework.web.method.annotation.HandlerMethodValidationException.class)
+    public ResponseEntity<ApiErrorResponse> handleHandlerMethodValidation(
+            org.springframework.web.method.annotation.HandlerMethodValidationException exception
+    ) {
+        return buildError(HttpStatus.BAD_REQUEST, "Validation failed: " + exception.getMessage());
+    }
+
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+            jakarta.validation.ConstraintViolationException exception
+    ) {
+        return buildError(HttpStatus.BAD_REQUEST, "Validation failed: " + exception.getMessage());
+    }
+
     private ResponseEntity<ApiErrorResponse> buildError(
             HttpStatus status,
             String message
